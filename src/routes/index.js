@@ -1,6 +1,8 @@
 const express = require("express");
 
 const router = express.Router();
+const authRoutes = require("./auth.routes");
+
 
 router.get("/health", (req, res) => {
   res.json({
@@ -8,5 +10,7 @@ router.get("/health", (req, res) => {
     message: "Authentication Service Running",
   });
 });
+
+router.use("/auth", authRoutes);
 
 module.exports = router;
