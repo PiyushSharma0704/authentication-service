@@ -31,14 +31,6 @@ const registerSchema = z.object({
   }),
 });
 
-const loginSchema = z.object({
-  body: z.object({
-    email: z.string().email(),
-
-    password: z.string().min(1),
-  }),
-});
-
 const forgotPasswordSchema = z.object({
   body: z.object({
     email: z.string().email(),
@@ -53,9 +45,21 @@ const resetPasswordSchema = z.object({
   }),
 });
 
+const loginSchema = z.object({
+  body: z.object({
+    email: z
+      .string()
+      .trim()
+      .email()
+      .transform((email) => email.toLowerCase()),
+
+    password: z.string().min(1, "Password is required"),
+  }),
+});
+
 module.exports = {
   registerSchema,
-  loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  loginSchema,
 };

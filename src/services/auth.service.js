@@ -20,6 +20,27 @@ const registerUser = async ({ name, email, password }) => {
   return user;
 };
 
+const loginUser = async ({ email, password }) => {
+  const user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) {
+    throw new ApiError(401, "Invalid email or password");
+  }
+
+  if (!user.isActive) {
+    throw new ApiError(403, "Account is disabled");
+  }
+
+  return user;
+};
+
 module.exports = {
   registerUser,
+  loginUser,
 };
