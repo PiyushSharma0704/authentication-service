@@ -20,7 +20,7 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const user = await authService.loginUser(req.body);
 
-  const { accessToken, refreshToken } = tokenService.createTokens(user);
+  const { accessToken, refreshToken } = await tokenService.createTokenPair(user);
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
 
@@ -35,7 +35,31 @@ const login = catchAsync(async (req, res) => {
   );
 });
 
+const getCurrentUser = catchAsync(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Current user fetched successfully", req.user));
+});
+
+const refreshToken = catchAsync(async (req, res) => {
+  const token = req.body.refreshToken || req.cookies.refreshToken;
+
+  if (!token) {
+    throw new ApiError(401, "Refresh token required");
+  }
+
+  const tokens = await authService.refreshLogin(token);
+
+  res.cookie("accessToken", tokens.accessToken, accessCookieOptions);
+
+  res.cookie("refreshToken", tokens.refreshToken, refreshCookieOptions);
+
+  return res.json(new ApiResponse(200, "Access token refreshed", tokens));
+});
+
 module.exports = {
   register,
   login,
+  getCurrentUser,
+  refreshToken,
 };

@@ -57,9 +57,16 @@ const loginSchema = z.object({
   }),
 });
 
+const refreshTokenSchema = z.object({
+  body: z.object({
+    refreshToken: z.string(),
+  }),
+});
+
 module.exports = {
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   loginSchema,
+  refreshTokenSchema,
 };

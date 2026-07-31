@@ -1,6 +1,7 @@
 const User = require("../models/User.mongoose.model");
 const ApiError = require("../utils/ApiError");
 const logger = require("../utils/logger");
+const tokenService = require("./token.service");
 
 const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
@@ -40,7 +41,14 @@ const loginUser = async ({ email, password }) => {
   return user;
 };
 
+const refreshLogin = async (refreshToken) => {
+  return tokenService.rotateRefreshToken(
+    refreshToken
+  );
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  refreshLogin
 };
