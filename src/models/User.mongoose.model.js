@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const { ROLES } = require("../constants/strings");
 
 const userSchema = new mongoose.Schema(
   {
@@ -30,9 +29,10 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     role: {
-      type: String,
-      enum: Object.values(ROLES),
-      default: ROLES.USER,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
+      index: true,
     },
     avatar: {
       type: String,

@@ -2,7 +2,7 @@ const User = require("../models/User.mongoose.model");
 const ApiError = require("../utils/ApiError");
 const logger = require("../utils/logger");
 const tokenService = require("./token.service");
-
+const { getRoleByName } = require("./role.service");
 const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
 
@@ -10,10 +10,17 @@ const registerUser = async ({ name, email, password }) => {
     throw new ApiError(409, "User already exists");
   }
 
+  const userRole = await getRoleByName("USER");
+
+  if (!userRole) {
+    throw new ApiError(500, "Default USER role not found");
+  }
+
   const user = await User.create({
     name,
     email,
     password,
+    role: userRole._id,
   });
 
   logger.info(`New user registered: ${user.email}`);
@@ -22,7 +29,14 @@ const registerUser = async ({ name, email, password }) => {
 };
 
 const loginUser = async ({ email, password }) => {
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email })
+    .select("+password")
+    .populate({
+      path: "role",
+      populate: {
+        path: "permissions",
+      },
+    });
 
   if (!user) {
     throw new ApiError(401, "Invalid email or password");
@@ -42,13 +56,11 @@ const loginUser = async ({ email, password }) => {
 };
 
 const refreshLogin = async (refreshToken) => {
-  return tokenService.rotateRefreshToken(
-    refreshToken
-  );
+  return tokenService.rotateRefreshToken(refreshToken);
 };
 
 module.exports = {
   registerUser,
   loginUser,
-  refreshLogin
+  refreshLogin,
 };

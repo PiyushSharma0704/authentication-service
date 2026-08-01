@@ -5,7 +5,6 @@ const createTokenPair = async (user) => {
   const payload = {
     id: user._id,
     email: user.email,
-    role: user.role,
   };
 
   const accessToken = generateAccessToken(payload);

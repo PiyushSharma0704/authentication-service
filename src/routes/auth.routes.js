@@ -12,6 +12,7 @@ const {
   loginSchema,
   refreshTokenSchema,
 } = require("../validators/auth.validator");
+const catchAsync = require("../utils/catchAsync");
 
 router.post("/register", validate(registerSchema), authController.register);
 
@@ -24,5 +25,6 @@ router.post(
 );
 
 router.get("/me", authMiddleware, authController.getCurrentUser);
+
 
 module.exports = router;

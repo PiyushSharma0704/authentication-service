@@ -3,7 +3,7 @@ const ApiResponse = require("../utils/ApiResponse");
 
 const authService = require("../services/auth.service");
 const tokenService = require("../services/token.service");
-
+const ApiError = require("../utils/ApiError");
 const {
   accessCookieOptions,
   refreshCookieOptions,
@@ -20,7 +20,20 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const user = await authService.loginUser(req.body);
 
-  const { accessToken, refreshToken } = await tokenService.createTokenPair(user);
+  const loginResponse = {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: {
+      id: user.role._id,
+      name: user.role.name,
+    },
+    avatar: user.avatar,
+    isEmailVerified: user.isEmailVerified,
+  };
+
+  const { accessToken, refreshToken } =
+    await tokenService.createTokenPair(user);
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
 
@@ -28,7 +41,7 @@ const login = catchAsync(async (req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, "Login successful", {
-      user,
+      user: loginResponse,
       accessToken,
       refreshToken,
     }),
@@ -36,9 +49,28 @@ const login = catchAsync(async (req, res) => {
 });
 
 const getCurrentUser = catchAsync(async (req, res) => {
+  const user = {
+    id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    avatar: req.user.avatar,
+    isEmailVerified: req.user.isEmailVerified,
+
+    role: {
+      id: req.user.role._id,
+      name: req.user.role.name,
+
+      permissions: req.user.role.permissions.map((permission) => ({
+        id: permission._id,
+        name: permission.name,
+        module: permission.module,
+      })),
+    },
+  };
+
   return res
     .status(200)
-    .json(new ApiResponse(200, "Current user fetched successfully", req.user));
+    .json(new ApiResponse(200, "Current user fetched successfully", user));
 });
 
 const refreshToken = catchAsync(async (req, res) => {
